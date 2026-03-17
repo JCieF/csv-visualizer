@@ -1,19 +1,23 @@
 """
 callbacks/chart.py
 
-Two callbacks:
-  1. update_axis_dropdowns — repopulates X/Y dropdowns when new data is loaded
+Four callbacks:
+  1. update_axis_dropdowns — repopulates X/Y dropdowns when new CSV data is loaded
   2. render_chart          — re-renders the chart when type or axis selection changes
+  3. update_suggestion     — shows/hides the smart-pie suggestion banner
+  4. switch_to_bar         — switches chart type to horizontal bar when banner button clicked
 """
 
 from typing import Optional
 
 import pandas as pd
-from dash import Input, Output, State, callback
+from dash import Input, Output, State, callback, html
+import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 
 from utils import ids
-from utils.chart_builder import build_chart, CHART_PIE
+from utils.chart_builder import build_chart, CHART_PIE, CHART_BAR_H
+from utils.smart_pie import get_pie_status
 from utils.type_detection import (
     COL_NUMERIC,
     COL_DATETIME,
@@ -21,16 +25,28 @@ from utils.type_detection import (
 )
 
 # Placeholder shown in the graph before axes are selected
+_PLACEHOLDER_ANNOTATION = {
+    "xref": "paper",
+    "yref": "paper",
+    "x": 0.5,
+    "y": 0.5,
+    "showarrow": False,
+}
+
 EMPTY_FIGURE = go.Figure().update_layout(
     annotations=[{
+        **_PLACEHOLDER_ANNOTATION,
         "text": "Select X and Y axes above to generate a chart.",
-        "xref": "paper", "yref": "paper",
-        "x": 0.5, "y": 0.5,
-        "showarrow": False,
-        "font": {"size": 16, "color": "#aaa"},
-    }]
+        "font": {"size": 16, "color": "#94a3b8"},
+    }],
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
 )
 
+
+# ---------------------------------------------------------------------------
+# 1. Repopulate axis dropdowns when data changes
+# ---------------------------------------------------------------------------
 
 @callback(
     Output(ids.X_AXIS, "options"),
@@ -45,9 +61,10 @@ def update_axis_dropdowns(
     """
     Repopulate X and Y axis dropdowns whenever new CSV data is stored.
 
-    - X axis: all columns (any type can be on X)
+    - X axis: all columns (any type can be placed on X)
     - Y axis: numeric and datetime columns only (meaningful to plot as a value)
-    Defaults to the first suitable column for each axis.
+
+    Pre-selects the first suitable column for each axis as a sensible default.
     """
     if store_data is None:
         return [], None, [], None
@@ -57,17 +74,22 @@ def update_axis_dropdowns(
 
     all_options = [{"label": col, "value": col} for col in all_columns]
 
-    # Y axis should be numeric/datetime — meaningless to sum strings
-    y_eligible = get_columns_by_type(col_types, COL_NUMERIC) + \
-                 get_columns_by_type(col_types, COL_DATETIME)
+    # Y axis should be numeric or datetime — summing/averaging strings is meaningless
+    y_eligible = (
+        get_columns_by_type(col_types, COL_NUMERIC)
+        + get_columns_by_type(col_types, COL_DATETIME)
+    )
     y_options = [{"label": col, "value": col} for col in y_eligible]
 
-    # Pre-select sensible defaults: first column for X, first numeric for Y
     default_x = all_columns[0] if all_columns else None
     default_y = y_eligible[0] if y_eligible else None
 
     return all_options, default_x, y_options, default_y
 
+
+# ---------------------------------------------------------------------------
+# 2. Render the chart
+# ---------------------------------------------------------------------------
 
 @callback(
     Output(ids.CHART_GRAPH, "figure"),
@@ -84,29 +106,109 @@ def render_chart(
     store_data: Optional[dict],
 ) -> go.Figure:
     """
-    Re-render the chart whenever chart type or axis selection changes.
+    Re-render the chart whenever the chart type or axis selection changes.
 
     For bar and pie charts, a Y column is optional (falls back to value counts).
-    For line and scatter, Y is required — shows the empty placeholder if missing.
+    For line and scatter, Y is required — returns an empty placeholder if missing.
     """
     if store_data is None or x_col is None:
         return EMPTY_FIGURE
 
-    # Pie chart works with just an X (label) column
-    if chart_type != CHART_PIE and y_col is None:
+    # Pie and bar charts work with just an X (label/category) column
+    requires_y = chart_type not in (CHART_PIE, "bar", "bar_h")
+    if requires_y and y_col is None:
         return EMPTY_FIGURE
 
     try:
         df = pd.DataFrame.from_records(store_data["records"])
         return build_chart(df, chart_type, x_col, y_col)
-    except (ValueError, KeyError) as e:
-        # Return empty figure with error annotation instead of crashing
+    except (ValueError, KeyError) as exc:
         return go.Figure().update_layout(
             annotations=[{
-                "text": f"Could not render chart: {e}",
-                "xref": "paper", "yref": "paper",
-                "x": 0.5, "y": 0.5,
-                "showarrow": False,
-                "font": {"size": 14, "color": "#e74c3c"},
+                **_PLACEHOLDER_ANNOTATION,
+                "text": f"Could not render chart: {exc}",
+                "font": {"size": 14, "color": "#ef4444"},
             }]
         )
+
+
+# ---------------------------------------------------------------------------
+# 3. Smart-pie suggestion banner
+# ---------------------------------------------------------------------------
+
+@callback(
+    Output(ids.CHART_SUGGESTION, "is_open"),
+    Output(ids.CHART_SUGGESTION, "children"),
+    Output(ids.CHART_SUGGESTION, "color"),
+    Input(ids.CHART_TYPE, "value"),
+    Input(ids.X_AXIS, "value"),
+    State(ids.CSV_STORE, "data"),
+)
+def update_suggestion(
+    chart_type: Optional[str],
+    x_col: Optional[str],
+    store_data: Optional[dict],
+) -> tuple[bool, list, str]:
+    """
+    Show a contextual banner when a pie chart has too many categories.
+
+    - "suggest_bar" (> CARDINALITY_PIE_MAX): warning banner with a
+      one-click switch to horizontal bar chart.
+    - "truncated" (> PIE_TOP_N but ≤ CARDINALITY_PIE_MAX): info banner
+      explaining that the pie shows only the top N categories.
+    - Otherwise: banner is hidden.
+    """
+    if store_data is None or x_col is None or chart_type != CHART_PIE:
+        return False, [], "info"
+
+    try:
+        df = pd.DataFrame.from_records(store_data["records"])
+        status, message = get_pie_status(df, x_col, chart_type)
+
+        if status == "suggest_bar":
+            children = [
+                html.I(className="bi bi-exclamation-triangle-fill me-2"),
+                html.Span(message),
+                dbc.Button(
+                    [
+                        html.I(className="bi bi-bar-chart-line me-1"),
+                        "Switch to Horizontal Bar",
+                    ],
+                    id=ids.CHART_SUGGESTION_BTN,
+                    size="sm",
+                    color="warning",
+                    outline=True,
+                    className="ms-3 suggestion-btn",
+                ),
+            ]
+            return True, children, "warning"
+
+        if status == "truncated":
+            children = [
+                html.I(className="bi bi-info-circle-fill me-2"),
+                html.Span(message),
+            ]
+            return True, children, "info"
+
+    except (KeyError, ValueError):
+        pass
+
+    return False, [], "info"
+
+
+# ---------------------------------------------------------------------------
+# 4. Switch to horizontal bar when the banner button is clicked
+# ---------------------------------------------------------------------------
+
+@callback(
+    Output(ids.CHART_TYPE, "value"),
+    Input(ids.CHART_SUGGESTION_BTN, "n_clicks"),
+    prevent_initial_call=True,
+)
+def switch_to_horizontal_bar(_n_clicks: Optional[int]) -> str:
+    """
+    Flip the chart type radio to 'Horizontal Bar' when the user clicks
+    the suggestion banner button. The chart and banner update reactively
+    via the render_chart and update_suggestion callbacks.
+    """
+    return CHART_BAR_H

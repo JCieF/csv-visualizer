@@ -1,44 +1,89 @@
 /* ============================================================
-   CSV Data Visualizer — Custom Styles
+   CSV Data Visualizer — Design System
+   White + Cyan color scheme
    ============================================================ */
 
 /* ----------------------------------------------------------
-   CSS Custom Properties (Design Tokens)
-   These are the source of truth for all colors.
-   Changing a token here updates the whole UI.
+   1. Design Tokens (CSS Custom Properties)
+   All colors, radii, and transitions defined here once.
    ---------------------------------------------------------- */
 :root {
-  --color-bg: #ffffff;
-  --color-surface: #f8f9fa;
-  --color-border: #dee2e6;
-  --color-text-primary: #212529;
-  --color-text-muted: #6c757d;
-  --color-accent: #0d6efd;
-  --color-chart-bg: #ffffff;
+  /* Cyan palette */
+  --cyan-50:  #ecfeff;
+  --cyan-100: #cffafe;
+  --cyan-200: #a5f3fc;
+  --cyan-300: #67e8f9;
+  --cyan-400: #22d3ee;
+  --cyan-500: #06b6d4;   /* primary accent */
+  --cyan-600: #0891b2;   /* hover / darker accent */
+  --cyan-700: #0e7490;   /* text on light bg */
+  --cyan-900: #164e63;   /* deep, for headings */
+
+  /* Semantic surface tokens */
+  --color-bg:             #ffffff;
+  --color-surface:        #f8fcff;
+  --color-surface-hover:  #f0fdff;
+  --color-border:         #a5f3fc;
+  --color-border-muted:   #e0f2fe;
+  --color-text-primary:   #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted:     #64748b;
+  --color-accent:         var(--cyan-500);
+  --color-accent-hover:   var(--cyan-600);
+  --color-accent-light:   var(--cyan-50);
+  --color-chart-bg:       #ffffff;
+
+  /* Shadows */
+  --shadow-sm:  0 1px 4px rgba(6, 182, 212, 0.08);
+  --shadow-md:  0 4px 16px rgba(6, 182, 212, 0.12);
+  --shadow-lg:  0 8px 32px rgba(6, 182, 212, 0.18);
+  --shadow-focus: 0 0 0 3px rgba(6, 182, 212, 0.25);
+
+  /* Border radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.25s ease;
 }
 
 /* ----------------------------------------------------------
-   Dark Mode Overrides
-   Applied when the .dark-mode class is on #main-container.
-   The toggle callback (to be built) switches this class.
+   2. Dark Mode Overrides
+   Toggle by adding/removing .dark-mode on #main-container.
    ---------------------------------------------------------- */
 .dark-mode {
-  --color-bg: #1a1a2e;
-  --color-surface: #16213e;
-  --color-border: #0f3460;
-  --color-text-primary: #e0e0e0;
-  --color-text-muted: #a0a0b0;
-  --color-accent: #4dabf7;
-  --color-chart-bg: #1e1e3a;
+  --color-bg:             #0f172a;
+  --color-surface:        #1e293b;
+  --color-surface-hover:  #263548;
+  --color-border:         #0891b2;
+  --color-border-muted:   #1e3a4f;
+  --color-text-primary:   #e2e8f0;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted:     #64748b;
+  --color-accent:         var(--cyan-400);
+  --color-accent-hover:   var(--cyan-300);
+  --color-accent-light:   rgba(6, 182, 212, 0.1);
+  --color-chart-bg:       #1e293b;
 }
 
 /* ----------------------------------------------------------
-   Base Styles
+   3. Base & Body
    ---------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   background-color: var(--color-bg);
   color: var(--color-text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  transition: background-color var(--transition-base),
+              color var(--transition-base);
 }
 
 #main-container {
@@ -47,31 +92,378 @@ body {
 }
 
 /* ----------------------------------------------------------
-   Upload Area
-   Placeholder styles — will be filled in as component is built
+   4. Navbar
    ---------------------------------------------------------- */
-.upload-area {
-  border: 2px dashed var(--color-border);
-  border-radius: 8px;
-  padding: 2rem;
-  text-align: center;
-  cursor: pointer;
-  background-color: var(--color-surface);
-  color: var(--color-text-muted);
-  transition: border-color 0.2s ease;
+.app-navbar {
+  background-color: #ffffff !important;
+  border-bottom: 2px solid var(--cyan-500);
+  box-shadow: var(--shadow-sm);
+  padding: 0.75rem 0;
+  transition: box-shadow var(--transition-base);
 }
 
-.upload-area:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+.dark-mode .app-navbar {
+  background-color: #0f172a !important;
+  border-bottom-color: var(--cyan-600);
+}
+
+.app-navbar .navbar-brand {
+  color: var(--cyan-700) !important;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color var(--transition-fast);
+}
+
+.app-navbar .navbar-brand:hover {
+  color: var(--cyan-500) !important;
+}
+
+.dark-mode .app-navbar .navbar-brand {
+  color: var(--cyan-300) !important;
 }
 
 /* ----------------------------------------------------------
-   Chart Container
+   5. Cards
    ---------------------------------------------------------- */
-.chart-container {
-  background-color: var(--color-chart-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 1rem;
+.card {
+  background-color: var(--color-bg) !important;
+  border: 1px solid var(--color-border-muted) !important;
+  border-top: 3px solid var(--color-accent) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.dark-mode .card {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border-muted) !important;
+  border-top-color: var(--color-accent) !important;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Chart card gets extra bottom padding for the graph */
+.chart-card .card-body {
+  padding-bottom: 0.5rem;
+}
+
+/* ----------------------------------------------------------
+   6. Section Headers
+   ---------------------------------------------------------- */
+.section-header {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--cyan-700);
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--color-border-muted);
+  gap: 0.35rem;
+}
+
+.dark-mode .section-header {
+  color: var(--cyan-300);
+  border-bottom-color: var(--color-border-muted);
+}
+
+/* ----------------------------------------------------------
+   7. Upload Area
+   ---------------------------------------------------------- */
+.upload-area {
+  border: 2px dashed var(--cyan-400);
+  border-radius: var(--radius-md);
+  padding: 2.75rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  background-color: var(--cyan-50);
+  color: var(--color-text-muted);
+  transition: all var(--transition-base);
+}
+
+.upload-area:hover {
+  border-color: var(--cyan-500);
+  background-color: var(--cyan-100);
+  color: var(--cyan-700);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.dark-mode .upload-area {
+  background-color: var(--color-accent-light);
+  border-color: var(--cyan-600);
+  color: var(--color-text-muted);
+}
+
+.dark-mode .upload-area:hover {
+  background-color: rgba(6, 182, 212, 0.15);
+  border-color: var(--cyan-400);
+  color: var(--cyan-300);
+}
+
+.upload-icon {
+  font-size: 2.5rem;
+  color: var(--cyan-400);
+  display: block;
+  margin-bottom: 0.75rem;
+  transition: color var(--transition-fast), transform var(--transition-base);
+}
+
+.upload-area:hover .upload-icon {
+  color: var(--cyan-500);
+  transform: scale(1.1);
+}
+
+.upload-hint {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  margin-top: 0.35rem;
+}
+
+/* ----------------------------------------------------------
+   8. Buttons
+   ---------------------------------------------------------- */
+.btn-primary {
+  background-color: var(--cyan-500) !important;
+  border-color: var(--cyan-500) !important;
+  color: #ffffff !important;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 1.1rem;
+  transition: background-color var(--transition-fast),
+              border-color var(--transition-fast),
+              box-shadow var(--transition-fast),
+              transform var(--transition-fast);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--cyan-600) !important;
+  border-color: var(--cyan-600) !important;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: none !important;
+}
+
+/* Outline cyan variant (used in suggestion banner) */
+.btn-outline-warning.suggestion-btn {
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+/* ----------------------------------------------------------
+   9. Form Labels
+   ---------------------------------------------------------- */
+.form-label-styled {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dark-mode .form-label-styled {
+  color: var(--color-text-secondary);
+}
+
+/* ----------------------------------------------------------
+   10. Chart Type Radio Buttons
+   ---------------------------------------------------------- */
+.chart-type-radio .form-check-input:checked {
+  background-color: var(--cyan-500) !important;
+  border-color: var(--cyan-500) !important;
+}
+
+.chart-type-radio .form-check-input:focus {
+  border-color: var(--cyan-400) !important;
+  box-shadow: var(--shadow-focus) !important;
+}
+
+.chart-type-radio .form-check-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.chart-type-radio .form-check-label:hover {
+  color: var(--cyan-600);
+}
+
+/* ----------------------------------------------------------
+   11. Axis Dropdowns (dcc.Dropdown — react-select)
+   ---------------------------------------------------------- */
+.axis-dropdown .Select-control {
+  border: 1px solid var(--color-border-muted) !important;
+  border-radius: var(--radius-sm) !important;
+  background-color: var(--color-bg) !important;
+  color: var(--color-text-primary) !important;
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast) !important;
+  min-height: 38px;
+}
+
+.axis-dropdown .Select.is-focused > .Select-control {
+  border-color: var(--cyan-500) !important;
+  box-shadow: var(--shadow-focus) !important;
+}
+
+.axis-dropdown .Select-menu-outer {
+  border: 1px solid var(--color-border-muted) !important;
+  border-top: none !important;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.axis-dropdown .VirtualizedSelectOption,
+.axis-dropdown .Select-option {
+  color: var(--color-text-primary) !important;
+  font-size: 0.875rem;
+  transition: background-color var(--transition-fast);
+}
+
+.axis-dropdown .VirtualizedSelectFocusedOption,
+.axis-dropdown .Select-option.is-focused {
+  background-color: var(--cyan-50) !important;
+  color: var(--cyan-700) !important;
+}
+
+.axis-dropdown .VirtualizedSelectSelectedOption,
+.axis-dropdown .Select-option.is-selected {
+  background-color: var(--cyan-500) !important;
+  color: #ffffff !important;
+}
+
+.axis-dropdown .Select-placeholder,
+.axis-dropdown .Select--single .Select-value-label {
+  color: var(--color-text-muted) !important;
+  font-size: 0.875rem;
+}
+
+.axis-dropdown .Select--single .Select-value .Select-value-label {
+  color: var(--color-text-primary) !important;
+}
+
+/* Dark mode dropdown overrides */
+.dark-mode .axis-dropdown .Select-control {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border-muted) !important;
+}
+
+.dark-mode .axis-dropdown .Select-menu-outer {
+  background-color: var(--color-surface) !important;
+}
+
+.dark-mode .axis-dropdown .VirtualizedSelectOption,
+.dark-mode .axis-dropdown .Select-option {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* ----------------------------------------------------------
+   12. Smart-Pie Suggestion Banner
+   ---------------------------------------------------------- */
+.suggestion-alert {
+  border-radius: var(--radius-sm) !important;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  animation: slideDown 0.2s ease;
+}
+
+.suggestion-alert .bi {
+  flex-shrink: 0;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ----------------------------------------------------------
+   13. Chart Container & Graph
+   ---------------------------------------------------------- */
+.chart-graph {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.js-plotly-plot .plotly .modebar {
+  background-color: transparent !important;
+}
+
+.js-plotly-plot .plotly .modebar-btn path {
+  fill: var(--color-text-muted) !important;
+}
+
+.js-plotly-plot .plotly .modebar-btn:hover path {
+  fill: var(--cyan-500) !important;
+}
+
+/* ----------------------------------------------------------
+   14. Upload Status Messages
+   ---------------------------------------------------------- */
+.upload-success {
+  color: #059669;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.upload-error {
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ----------------------------------------------------------
+   15. Responsive & Utility
+   ---------------------------------------------------------- */
+.mb-section {
+  margin-bottom: 1.5rem;
+}
+
+/* Smooth all interactive transitions */
+a, button, input, select, .form-check-input, .form-check-label {
+  transition: all var(--transition-fast);
+}
+
+@media (max-width: 768px) {
+  .card-body {
+    padding: 1rem;
+  }
+
+  .upload-area {
+    padding: 1.75rem 1rem;
+  }
+
+  .section-header {
+    font-size: 0.9375rem;
+  }
 }

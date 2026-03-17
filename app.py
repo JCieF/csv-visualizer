@@ -40,11 +40,17 @@ server = app.server
 
 navbar = dbc.Navbar(
     dbc.Container([
-        dbc.NavbarBrand("CSV Data Visualizer", className="fw-bold"),
+        dbc.NavbarBrand(
+            [
+                html.I(className="bi bi-bar-chart-fill me-2"),
+                "CSV Data Visualizer",
+            ],
+            className="fw-bold",
+        ),
     ]),
-    color="primary",
-    dark=True,
-    className="mb-4",
+    color="light",
+    dark=False,
+    className="mb-4 app-navbar",
 )
 
 app.layout = dbc.Container(

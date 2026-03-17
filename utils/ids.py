@@ -20,6 +20,8 @@ CHART_TYPE = "chart-type"
 X_AXIS = "x-axis"
 Y_AXIS = "y-axis"
 CHART_GRAPH = "chart-graph"
+CHART_SUGGESTION = "chart-suggestion"
+CHART_SUGGESTION_BTN = "chart-suggestion-btn"
 
 # --- App shell ---
 MAIN_CONTAINER = "main-container"
