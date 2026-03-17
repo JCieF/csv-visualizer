@@ -1,0 +1,77 @@
+/* ============================================================
+   CSV Data Visualizer — Custom Styles
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   CSS Custom Properties (Design Tokens)
+   These are the source of truth for all colors.
+   Changing a token here updates the whole UI.
+   ---------------------------------------------------------- */
+:root {
+  --color-bg: #ffffff;
+  --color-surface: #f8f9fa;
+  --color-border: #dee2e6;
+  --color-text-primary: #212529;
+  --color-text-muted: #6c757d;
+  --color-accent: #0d6efd;
+  --color-chart-bg: #ffffff;
+}
+
+/* ----------------------------------------------------------
+   Dark Mode Overrides
+   Applied when the .dark-mode class is on #main-container.
+   The toggle callback (to be built) switches this class.
+   ---------------------------------------------------------- */
+.dark-mode {
+  --color-bg: #1a1a2e;
+  --color-surface: #16213e;
+  --color-border: #0f3460;
+  --color-text-primary: #e0e0e0;
+  --color-text-muted: #a0a0b0;
+  --color-accent: #4dabf7;
+  --color-chart-bg: #1e1e3a;
+}
+
+/* ----------------------------------------------------------
+   Base Styles
+   ---------------------------------------------------------- */
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#main-container {
+  min-height: 100vh;
+  background-color: var(--color-bg);
+}
+
+/* ----------------------------------------------------------
+   Upload Area
+   Placeholder styles — will be filled in as component is built
+   ---------------------------------------------------------- */
+.upload-area {
+  border: 2px dashed var(--color-border);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  background-color: var(--color-surface);
+  color: var(--color-text-muted);
+  transition: border-color 0.2s ease;
+}
+
+.upload-area:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* ----------------------------------------------------------
+   Chart Container
+   ---------------------------------------------------------- */
+.chart-container {
+  background-color: var(--color-chart-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1rem;
+}

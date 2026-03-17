@@ -1,0 +1,41 @@
+# ── Documentation (local only) ──────────────────────────────
+lessons.md
+TODO.md
+
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── Virtual environments ─────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Dash / Plotly ────────────────────────────────────────────
+# Plotly static image export requires kaleido; its cache is local
+.plotly/
+
+# ── Uploaded data files ──────────────────────────────────────
+# Don't accidentally commit user-uploaded CSVs
+*.csv
+uploads/
+
+# ── OS & editor ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Environment variables ────────────────────────────────────
+.env
+.env.local
