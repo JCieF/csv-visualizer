@@ -1,23 +1,37 @@
 """
 CSV Data Visualizer — Main Application Entry Point
 
-Initializes the Dash app, sets the layout, and registers all callbacks.
-Run with: python app.py
+Initializes the Dash app, assembles the layout from components,
+then imports callbacks to register them with the app.
+
+Run locally:  python app.py
+Production:   gunicorn app:server
 """
 
 import dash
 import dash_bootstrap_components as dbc
-from dash import html, dcc
+from dash import dcc, html
 
-# Initialize the Dash app with Bootstrap theme
+from components.upload import create_upload_component
+from components.chart import create_chart_panel
+from utils import ids
+
+# ---------------------------------------------------------------------------
+# App initialisation
+# ---------------------------------------------------------------------------
+
 app = dash.Dash(
     __name__,
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
-    suppress_callback_exceptions=True,  # needed once dynamic components are added
+    external_stylesheets=[
+        dbc.themes.BOOTSTRAP,
+        # Bootstrap Icons — used for the upload cloud icon
+        "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css",
+    ],
+    suppress_callback_exceptions=True,
     title="CSV Data Visualizer",
 )
 
-# Expose the Flask server for deployment (e.g., Gunicorn)
+# Expose the Flask server for Gunicorn / Vercel deployment
 server = app.server
 
 # ---------------------------------------------------------------------------
@@ -35,33 +49,36 @@ navbar = dbc.Navbar(
 
 app.layout = dbc.Container(
     [
-        # Theme toggle store — tracks light/dark mode state
-        dcc.Store(id="theme-store", data={"dark": False}),
+        # Stores — persist state across callbacks without re-parsing
+        dcc.Store(id=ids.CSV_STORE),
+        dcc.Store(id=ids.THEME_STORE, data={"dark": False}),
 
         navbar,
 
         dbc.Row(
             dbc.Col(
-                html.Div(
-                    [
-                        html.H4("Welcome!", className="text-center mt-5"),
-                        html.P(
-                            "Upload a CSV file to get started.",
-                            className="text-center text-muted",
-                        ),
-                    ]
-                )
+                [
+                    create_upload_component(),
+                    create_chart_panel(),
+                ],
+                width=12,
+                xl=10,
+                className="mx-auto",
             )
         ),
     ],
     fluid=True,
-    id="main-container",
+    id=ids.MAIN_CONTAINER,
 )
 
 # ---------------------------------------------------------------------------
-# Register callbacks (imported here to avoid circular imports)
+# Register callbacks
+# Imported AFTER layout is defined to avoid circular import issues.
+# The `noqa` comments suppress linting warnings for "imported but unused".
 # ---------------------------------------------------------------------------
-# from callbacks import upload, chart, filter  # uncomment as callbacks are built
+
+import callbacks.upload  # noqa: E402, F401
+import callbacks.chart   # noqa: E402, F401
 
 # ---------------------------------------------------------------------------
 # Run
