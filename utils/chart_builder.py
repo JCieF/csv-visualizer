@@ -28,8 +28,12 @@ CHART_TYPE_LABELS: dict[str, str] = {
     CHART_BAR_H: "Horizontal Bar",
 }
 
-# Plotly template used for all charts
-CHART_TEMPLATE = "plotly_white"
+# Plotly templates — light uses clean white grid, dark matches the navy UI
+CHART_TEMPLATE_LIGHT = "plotly_white"
+CHART_TEMPLATE_DARK  = "plotly_dark"
+
+# Shared font applied to all charts (matches the UI Inter font)
+_CHART_FONT = dict(family="Inter, system-ui, -apple-system, sans-serif")
 
 
 def build_chart(
@@ -37,6 +41,7 @@ def build_chart(
     chart_type: str,
     x_col: str,
     y_col: Optional[str] = None,
+    dark_mode: bool = False,
 ) -> go.Figure:
     """
     Build and return a Plotly figure for the given chart type and columns.
@@ -75,7 +80,13 @@ def build_chart(
         )
 
     fig = builder(df, x_col, y_col)
-    fig.update_layout(template=CHART_TEMPLATE)
+    fig.update_layout(
+        template=CHART_TEMPLATE_DARK if dark_mode else CHART_TEMPLATE_LIGHT,
+        # Transparent backgrounds so charts blend into their card surface
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=_CHART_FONT,
+    )
     return fig
 
 

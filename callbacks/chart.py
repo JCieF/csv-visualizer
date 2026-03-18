@@ -16,7 +16,7 @@ import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 
 from utils import ids
-from utils.chart_builder import build_chart, CHART_PIE, CHART_BAR_H
+from utils.chart_builder import build_chart, CHART_PIE, CHART_BAR_H, CHART_TEMPLATE_LIGHT, CHART_TEMPLATE_DARK
 from utils.smart_pie import get_pie_status
 from utils.type_detection import (
     COL_NUMERIC,
@@ -96,6 +96,7 @@ def update_axis_dropdowns(
     Input(ids.CHART_TYPE, "value"),
     Input(ids.X_AXIS, "value"),
     Input(ids.Y_AXIS, "value"),
+    Input(ids.THEME_STORE, "data"),
     State(ids.CSV_STORE, "data"),
     prevent_initial_call=True,
 )
@@ -103,6 +104,7 @@ def render_chart(
     chart_type: str,
     x_col: Optional[str],
     y_col: Optional[str],
+    theme_data: Optional[dict],
     store_data: Optional[dict],
 ) -> go.Figure:
     """
@@ -119,9 +121,11 @@ def render_chart(
     if requires_y and y_col is None:
         return EMPTY_FIGURE
 
+    dark_mode = (theme_data or {}).get("dark", False)
+
     try:
         df = pd.DataFrame.from_records(store_data["records"])
-        return build_chart(df, chart_type, x_col, y_col)
+        return build_chart(df, chart_type, x_col, y_col, dark_mode=dark_mode)
     except (ValueError, KeyError) as exc:
         return go.Figure().update_layout(
             annotations=[{

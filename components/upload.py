@@ -10,36 +10,66 @@ from dash import dcc, html
 
 from utils import ids
 
-# Accepted MIME types for the upload widget
 ACCEPTED_FILE_TYPES = ".csv"
 
 
-def create_upload_component() -> dbc.Card:
+def create_upload_component() -> html.Div:
     """
-    Build and return the CSV upload card.
+    Build and return the CSV upload section.
 
-    Contains:
-        - A dcc.Upload dropzone styled via the .upload-area CSS class
-        - A status div (id=UPLOAD_STATUS) where callbacks write success/error messages
+    Layout: centered card (~500px wide) with a dashed border dropzone,
+    cloud icon, primary CTA, and secondary browse link.
+    A compact status line below the card is written by the upload callback.
     """
-    return dbc.Card(
-        dbc.CardBody([
-            html.H5("Upload CSV File", className="card-title mb-3"),
-            dcc.Upload(
-                id=ids.UPLOAD_DATA,
-                children=html.Div([
-                    html.I(className="bi bi-cloud-upload fs-2 d-block mb-2"),
-                    html.Span("Drag and drop or "),
-                    html.A("browse to upload", className="text-primary"),
-                    html.Br(),
-                    html.Small(".csv files only", className="text-muted"),
-                ]),
-                className="upload-area",
-                accept=ACCEPTED_FILE_TYPES,
-                multiple=False,
+    return html.Div(
+        [
+            # Centered card container
+            dbc.Card(
+                dbc.CardBody(
+                    dcc.Upload(
+                        id=ids.UPLOAD_DATA,
+                        children=html.Div(
+                            [
+                                # Cloud upload icon
+                                html.I(className="bi bi-cloud-upload upload-icon"),
+
+                                # Primary CTA
+                                html.P(
+                                    "Drag and drop your CSV file",
+                                    className="upload-cta-primary",
+                                ),
+
+                                # Secondary browse link
+                                html.P(
+                                    [
+                                        "or ",
+                                        html.Span(
+                                            "click to browse",
+                                            className="upload-browse-link",
+                                        ),
+                                    ],
+                                    className="upload-cta-secondary",
+                                ),
+
+                                # File type hint
+                                html.Small(
+                                    ".csv files only",
+                                    className="upload-hint",
+                                ),
+                            ],
+                            className="upload-dropzone-inner",
+                        ),
+                        className="upload-dropzone",
+                        accept=ACCEPTED_FILE_TYPES,
+                        multiple=False,
+                    ),
+                    className="p-3",
+                ),
+                className="upload-card",
             ),
-            # Callback writes success/error feedback here
-            html.Div(id=ids.UPLOAD_STATUS, className="mt-3"),
-        ]),
-        className="mb-4",
+
+            # Compact one-line status written by handle_upload callback
+            html.Div(id=ids.UPLOAD_STATUS, className="upload-status-wrapper"),
+        ],
+        className="upload-section",
     )
