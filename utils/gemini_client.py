@@ -20,7 +20,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 # Model to use — Flash is fast, generous free-tier, and sufficient for this task
-GEMINI_MODEL = "gemini-1.5-flash"
+GEMINI_MODEL = "gemini-2.0-flash"
 
 # Maximum output tokens — 3-5 insight sentences fit comfortably in 300 tokens
 MAX_OUTPUT_TOKENS = 400
@@ -62,9 +62,8 @@ def generate_insights(stats_summary: dict[str, Any]) -> str:
         return (response.text or "").strip()
 
     except Exception as exc:
-        # Any failure (rate limit, network error, invalid key) falls back
-        # gracefully — the rule-based panel is still shown to the user.
-        logger.warning("Gemini API call failed: %s", exc)
+        logger.warning("Gemini insights call failed: %s", exc)
+        print(f"[Gemini insights error] {exc}")
         return ""
 
 
@@ -108,7 +107,8 @@ def answer_question(stats_summary: dict[str, Any], question: str) -> str:
 
     except Exception as exc:
         logger.warning("Gemini Q&A call failed: %s", exc)
-        return "Sorry, I could not process your question right now. Please try again."
+        print(f"[Gemini Q&A error] {exc}")
+        return f"Error: {exc}"
 
 
 # ---------------------------------------------------------------------------
