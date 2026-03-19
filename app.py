@@ -11,8 +11,12 @@ Production:   gunicorn app:server
 import dash
 import dash_bootstrap_components as dbc
 from dash import dcc, html
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from components.navbar import create_navbar
+from components.hero import create_welcome_hero
 from components.upload import create_upload_component
 from components.chart import create_chart_panel
 from components.column_summary import create_column_summary_section
@@ -60,7 +64,10 @@ app.layout = dbc.Container(
                     # After upload: the callback sets className="upload-anchored",
                     # collapsing the padding and sliding the card to its final spot.
                     html.Div(
-                        create_upload_component(),
+                        [
+                            create_welcome_hero(),
+                            create_upload_component(),
+                        ],
                         id=ids.UPLOAD_WRAPPER,
                         className="upload-wrapper",
                     ),

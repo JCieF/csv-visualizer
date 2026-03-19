@@ -41,5 +41,14 @@ INSIGHTS_AI_CONTENT   = "insights-ai-content"
 INSIGHTS_AI_SECTION   = "insights-ai-section"
 INSIGHTS_GEMINI_BADGE = "insights-gemini-badge"
 
+# --- Data Q&A chat ---
+CHAT_SECTION = "chat-section"
+CHAT_INPUT   = "chat-input"
+CHAT_SUBMIT  = "chat-submit"
+CHAT_ANSWER  = "chat-answer"
+
+# --- Welcome hero (empty state, hidden after upload) ---
+WELCOME_HERO = "welcome-hero"
+
 # --- App shell ---
 MAIN_CONTAINER = "main-container"

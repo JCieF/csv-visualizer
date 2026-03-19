@@ -68,6 +68,49 @@ def generate_insights(stats_summary: dict[str, Any]) -> str:
         return ""
 
 
+def answer_question(stats_summary: dict[str, Any], question: str) -> str:
+    """
+    Answer a user question strictly about the loaded dataset.
+
+    Args:
+        stats_summary: The dict produced by utils/insights._build_stats_summary().
+        question:      The user's free-text question.
+
+    Returns:
+        A plain-text answer grounded in the dataset statistics, or an error
+        string if the API is unavailable.  Never returns an empty string so
+        the caller can always render feedback.
+    """
+    api_key = os.environ.get("GOOGLE_API_KEY", "").strip()
+    if not api_key:
+        return "AI features are unavailable — GOOGLE_API_KEY is not configured."
+
+    try:
+        import google.generativeai as genai
+    except ImportError:
+        return "AI features are unavailable — google-generativeai package is not installed."
+
+    if not question or not question.strip():
+        return ""
+
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel(
+            GEMINI_MODEL,
+            generation_config=genai.GenerationConfig(
+                max_output_tokens=300,
+                temperature=0.2,   # lower temperature for factual, grounded answers
+            ),
+        )
+        prompt = _build_qa_prompt(stats_summary, question.strip())
+        response = model.generate_content(prompt)
+        return (response.text or "").strip()
+
+    except Exception as exc:
+        logger.warning("Gemini Q&A call failed: %s", exc)
+        return "Sorry, I could not process your question right now. Please try again."
+
+
 # ---------------------------------------------------------------------------
 # Prompt builder
 # ---------------------------------------------------------------------------
@@ -98,3 +141,30 @@ Rules:
 - Do NOT invent numbers that are not in the statistics above.
 
 Insights:"""
+
+
+def _build_qa_prompt(stats: dict[str, Any], question: str) -> str:
+    """
+    Build a strict, data-only Q&A prompt for the Gemini model.
+
+    The system instruction confines the model to the provided statistics and
+    directs it to politely decline any question that is not about the dataset.
+    """
+    stats_json = json.dumps(stats, indent=2)
+
+    return f"""You are a data assistant answering questions about a specific CSV dataset.
+
+Here are the pre-computed statistics for the file "{stats.get('filename', 'dataset')}":
+
+{stats_json}
+
+User question: {question}
+
+Instructions:
+- Answer ONLY if the question is about THIS dataset (its columns, values, statistics, or patterns shown above).
+- Base your answer strictly on the statistics provided — do NOT invent numbers or facts.
+- Be concise: 1–3 sentences maximum.
+- Use plain English, no markdown formatting.
+- If the question is not about the data (e.g. general knowledge, coding, other topics), reply with exactly: "I can only answer questions about the loaded dataset."
+
+Answer:"""

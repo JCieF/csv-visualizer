@@ -93,3 +93,16 @@ Plotly renders chart
 - Cloud deployment
 - Mobile-native app
 - Real-time / collaborative features
+
+
+this is important for the judging criteria so we need to follow this below
+Judging Criteria — 25 Points Maximum Prompt Craft (1–5) — Clear scope, constraints, and done criteria in their Claude session. Used the prompt template structure. Gave Claude the right context without raw code      dumps.                                     
+  
+2. Working Output (1–5) — Does it run? Can you demo it live? Partial credit for clear, demonstrable progress. Broken builds with good prompting still score on other criteria.       
+  
+3. Creativity & Polish (1–5) — Went beyond the minimum. Surprising features, thoughtful UX, visual polish, clever edge-case handling. Shows imagination — not just completion.       
+  
+4. Presentation Clarity (1–5) — Can they explain their prompting decisions? What worked, what didn't? Clear walkthrough of their session start prompt and key pivots during the      
+  build.                                     
+  
+5. Workflow Discipline (1–5) — Used git worktree. Proper session hygiene (no .env, no raw dumps). Clean git history. Followed the team workflow — not just "it works."

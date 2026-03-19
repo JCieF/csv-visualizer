@@ -1,6 +1,9 @@
 # ── Documentation (local only) ──────────────────────────────
 lessons.md
 TODO.md
+PRD.md
+CLAUDE.md
+Gemini.md
 
 # ── Python ───────────────────────────────────────────────────
 __pycache__/

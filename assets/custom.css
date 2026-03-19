@@ -118,6 +118,8 @@ body {
   min-height: 100vh;
   background-color: var(--page-bg);
   transition: background-color var(--t-base);
+  padding: 0%;
+  overflow: hidden;
 }
 
 /* ----------------------------------------------------------
@@ -225,12 +227,13 @@ body {
 /* ----------------------------------------------------------
    6b. Upload Section & Compact Status
    ---------------------------------------------------------- */
-/* Wrapper: padding-top pushes the card to the viewport vertical center on load.
-   calc(50vh - 220px) ≈ 50% of viewport minus the navbar height (~100px) and
-   half the card height (~120px).  max(0px, ...) prevents negative padding on
-   very short screens.  transition collapses it once upload-anchored is set. */
+/* Wrapper: padding-top centers the hero + upload card block vertically on load.
+   calc(50vh - 310px) ≈ half the viewport minus navbar height and half the total
+   content block height (hero ~160px + gap + card ~220px ≈ 420px / 2 = 210px).
+   max(0px, ...) prevents negative padding on short screens.
+   transition collapses it once upload-anchored is set. */
 .upload-wrapper {
-  padding-top: max(0px, calc(50vh - 220px));
+  padding-top: max(0px, calc(50vh - 310px));
   transition: padding-top 0.85s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -575,11 +578,31 @@ body {
 }
 
 /* Plotly modebar styling */
+.js-plotly-plot .plotly .modebar {
+  background-color: transparent !important;
+}
+
+.js-plotly-plot .plotly .modebar-group {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  backdrop-filter: blur(4px);
+}
+
+.dark-mode .js-plotly-plot .plotly .modebar-group {
+  background-color: rgba(19, 19, 31, 0.85) !important;
+  border-color: var(--border) !important;
+}
+
 .js-plotly-plot .plotly .modebar-btn path {
   fill: var(--color-text-muted) !important;
 }
 
 .js-plotly-plot .plotly .modebar-btn:hover path {
+  fill: var(--color-accent) !important;
+}
+
+.js-plotly-plot .plotly .modebar-btn.active path {
   fill: var(--color-accent) !important;
 }
 
@@ -962,7 +985,91 @@ body {
 }
 
 /* ----------------------------------------------------------
-   22. Responsive
+   22. Data Q&A Chat
+   ---------------------------------------------------------- */
+.chat-section-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  background-color: var(--surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast),
+              background-color var(--t-base);
+}
+
+.chat-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-focus);
+  background-color: var(--surface-1);
+}
+
+.chat-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.chat-send-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--gradient-accent);
+  color: #ffffff;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: opacity var(--t-fast), transform var(--t-fast),
+              box-shadow var(--t-fast);
+}
+
+.chat-send-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.35);
+}
+
+.dark-mode .chat-send-btn:hover {
+  box-shadow: 0 4px 12px rgba(129, 140, 248, 0.35);
+}
+
+.chat-answer {
+  min-height: 1rem;
+  margin-top: 0.6rem;
+}
+
+.chat-answer-text {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  padding: 0.6rem 0.85rem;
+  border-left: 2px solid var(--color-accent);
+  background-color: var(--surface-2);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin: 0;
+  animation: slideDown 0.2s ease both;
+}
+
+/* ----------------------------------------------------------
+   23. Responsive
    ---------------------------------------------------------- */
 @media (max-width: 768px) {
   .card-body         { padding: 1rem; }
@@ -979,4 +1086,74 @@ a, button, input, select,
 .form-check-input, .form-check-label,
 .card, .accordion-button {
   transition: all var(--t-fast);
+}
+
+/* ----------------------------------------------------------
+   24. Welcome Hero (empty state — hidden after upload)
+   ---------------------------------------------------------- */
+.welcome-hero {
+  text-align: center;
+  padding: 0 1rem 2rem;
+  animation: fadeIn 0.7s ease both;
+}
+
+.hero-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.6rem;
+  line-height: 1.15;
+}
+
+.hero-tagline {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  max-width: 420px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.65;
+}
+
+.hero-feature-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.hero-feature-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-accent-light);
+  color: var(--color-accent-hover);
+  border: 1px solid var(--border);
+  letter-spacing: 0.01em;
+  transition: background-color var(--t-fast), border-color var(--t-fast),
+              color var(--t-fast), transform var(--t-fast);
+}
+
+.hero-feature-pill:hover {
+  background-color: var(--color-accent);
+  color: #ffffff;
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.dark-mode .hero-feature-pill {
+  background-color: rgba(129, 140, 248, 0.1);
+  color: var(--indigo-300);
+  border-color: rgba(129, 140, 248, 0.2);
+}
+
+.dark-mode .hero-feature-pill:hover {
+  background-color: var(--indigo-500);
+  color: #ffffff;
+  border-color: var(--indigo-500);
 }

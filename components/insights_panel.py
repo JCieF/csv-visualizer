@@ -164,6 +164,48 @@ def create_insights_panel() -> html.Div:
                         style={"display": "none"},   # shown by callback if API key is set
                     ),
 
+                    # ── Ask-about-data chat ───────────────────────────────
+                    html.Div(
+                        [
+                            html.Div(className="insights-ai-divider"),
+                            html.Div(
+                                [
+                                    html.I(className="bi bi-chat-dots-fill me-2",
+                                           style={"color": "var(--color-accent)"}),
+                                    html.Span("Ask about your data",
+                                              className="chat-section-label"),
+                                ],
+                                className="d-flex align-items-center mb-2",
+                            ),
+                            html.Div(
+                                [
+                                    dcc.Input(
+                                        id=ids.CHAT_INPUT,
+                                        type="text",
+                                        placeholder="e.g. Which column has the most missing values?",
+                                        debounce=False,
+                                        className="chat-input",
+                                        n_submit=0,
+                                    ),
+                                    html.Button(
+                                        html.I(className="bi bi-send-fill"),
+                                        id=ids.CHAT_SUBMIT,
+                                        className="chat-send-btn",
+                                        n_clicks=0,
+                                    ),
+                                ],
+                                className="chat-input-row",
+                            ),
+                            dcc.Loading(
+                                html.Div(id=ids.CHAT_ANSWER, className="chat-answer"),
+                                type="dot",
+                                color="var(--color-accent)",
+                            ),
+                        ],
+                        id=ids.CHAT_SECTION,
+                        style={"display": "none"},   # shown by callback if API key is set
+                    ),
+
                 ]),
                 className="insights-card mb-0",
             )

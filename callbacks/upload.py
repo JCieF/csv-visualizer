@@ -18,11 +18,16 @@ from utils.csv_parser import parse_csv
 from utils.type_detection import detect_column_types
 
 
+HERO_VISIBLE: dict = {}
+HERO_HIDDEN: dict = {"display": "none"}
+
+
 @callback(
     Output(ids.CSV_STORE, "data"),
     Output(ids.UPLOAD_STATUS, "children"),
     Output(ids.CHART_PANEL, "style"),
     Output(ids.UPLOAD_WRAPPER, "className"),
+    Output(ids.WELCOME_HERO, "style"),
     Input(ids.UPLOAD_DATA, "contents"),
     State(ids.UPLOAD_DATA, "filename"),
     prevent_initial_call=True,
@@ -30,7 +35,7 @@ from utils.type_detection import detect_column_types
 def handle_upload(
     contents: str,
     filename: str,
-) -> tuple[dict | None, object, dict, str]:
+) -> tuple[dict | None, object, dict, str, dict]:
     """
     Triggered when a file is dropped or selected in the upload component.
 
@@ -38,9 +43,11 @@ def handle_upload(
         - store data (dict with 'records', 'columns', 'col_types', etc.) or None on error
         - compact inline status element shown below the dropzone
         - chart panel style (visible on success, hidden on error)
+        - upload wrapper class (anchored on success)
+        - welcome hero style (hidden on success)
     """
     if contents is None:
-        return None, None, HIDDEN_STYLE, "upload-wrapper"
+        return None, None, HIDDEN_STYLE, "upload-wrapper", HERO_VISIBLE
 
     df, error = parse_csv(contents, filename)
 
@@ -52,7 +59,7 @@ def handle_upload(
             ],
             className="upload-status-error",
         )
-        return None, feedback, HIDDEN_STYLE, "upload-wrapper"
+        return None, feedback, HIDDEN_STYLE, "upload-wrapper", HERO_VISIBLE
 
     col_types = detect_column_types(df)
 
@@ -84,5 +91,6 @@ def handle_upload(
         className="upload-status-inline",
     )
 
-    # "upload-anchored" collapses the padding-top, sliding the card to its layout position
-    return store_data, feedback, VISIBLE_STYLE, "upload-wrapper upload-anchored"
+    # "upload-anchored" collapses the padding-top, sliding the card to its layout position.
+    # HERO_HIDDEN removes the welcome hero once data is loaded.
+    return store_data, feedback, VISIBLE_STYLE, "upload-wrapper upload-anchored", HERO_HIDDEN

@@ -20,12 +20,12 @@ import os
 from typing import Optional
 
 import pandas as pd
-from dash import Input, Output, State, callback, html
+from dash import Input, Output, State, callback, ctx, html, no_update
 import dash_bootstrap_components as dbc
 
 from utils import ids
 from utils.insights import compute_insights
-from utils.gemini_client import generate_insights
+from utils.gemini_client import generate_insights, answer_question
 from components.insights_panel import build_finding_row
 
 _VISIBLE = {"display": "block"}
@@ -43,6 +43,7 @@ _FLEX    = {"display": "flex"}
     Output(ids.INSIGHTS_PANEL, "style"),
     Output(ids.INSIGHTS_AI_SECTION, "style"),
     Output(ids.INSIGHTS_GEMINI_BADGE, "style"),
+    Output(ids.CHAT_SECTION, "style"),
     Input(ids.CSV_STORE, "data"),
 )
 def compute_rule_insights(
@@ -53,7 +54,7 @@ def compute_rule_insights(
     Also controls whether the AI section is shown (requires GOOGLE_API_KEY).
     """
     if store_data is None:
-        return None, [], _HIDDEN, _HIDDEN, _HIDDEN
+        return None, [], _HIDDEN, _HIDDEN, _HIDDEN, _HIDDEN
 
     try:
         df       = pd.DataFrame.from_records(store_data["records"])
@@ -69,15 +70,16 @@ def compute_rule_insights(
         else:
             finding_elements = [build_finding_row(f) for f in findings]
 
-        # Show AI section only if the API key is available
-        has_key       = bool(os.environ.get("GOOGLE_API_KEY", "").strip())
-        ai_style      = _VISIBLE if has_key else _HIDDEN
-        badge_style   = _FLEX   if has_key else _HIDDEN
+        # Show AI section and chat only if the API key is available
+        has_key     = bool(os.environ.get("GOOGLE_API_KEY", "").strip())
+        ai_style    = _VISIBLE if has_key else _HIDDEN
+        badge_style = _FLEX   if has_key else _HIDDEN
+        chat_style  = _VISIBLE if has_key else _HIDDEN
 
-        return result, finding_elements, _VISIBLE, ai_style, badge_style
+        return result, finding_elements, _VISIBLE, ai_style, badge_style, chat_style
 
     except Exception:
-        return None, [], _HIDDEN, _HIDDEN, _HIDDEN
+        return None, [], _HIDDEN, _HIDDEN, _HIDDEN, _HIDDEN
 
 
 # ---------------------------------------------------------------------------
@@ -124,3 +126,45 @@ def generate_ai_narrative(
     return [
         html.Div(paragraphs, className="ai-insights-body"),
     ]
+
+
+# ---------------------------------------------------------------------------
+# Step 3 — Data Q&A (fires when user submits a question)
+# ---------------------------------------------------------------------------
+
+@callback(
+    Output(ids.CHAT_ANSWER, "children"),
+    Output(ids.CHAT_INPUT, "value"),
+    Input(ids.CHAT_SUBMIT, "n_clicks"),
+    Input(ids.CHAT_INPUT, "n_submit"),
+    State(ids.CHAT_INPUT, "value"),
+    State(ids.INSIGHTS_RULE_STORE, "data"),
+    prevent_initial_call=True,
+)
+def answer_data_question(
+    _n_clicks: Optional[int],
+    _n_submit: Optional[int],
+    question: Optional[str],
+    rule_data: Optional[dict],
+) -> tuple:
+    """
+    Send the user's question to Gemini with the dataset statistics and render
+    the grounded answer.  The input is cleared after each submission.
+    """
+    if not question or not question.strip():
+        return no_update, no_update
+
+    stats_summary = (rule_data or {}).get("stats_summary", {})
+    if not stats_summary:
+        answer_text = "Please upload a CSV file first so I have data to answer questions about."
+        return html.P(answer_text, className="chat-answer-text"), ""
+
+    answer_text = answer_question(stats_summary, question.strip())
+
+    if not answer_text:
+        return no_update, no_update
+
+    return (
+        html.P(answer_text, className="chat-answer-text"),
+        "",   # clear the input field
+    )
